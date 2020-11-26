@@ -23,4 +23,9 @@ public class SecretInjectable extends AbstractInjectable<SecretInjectionSource> 
     protected String getValue(SecretInjectionSource source) {
         return new String(source.getValues().getData().get(key), StandardCharsets.UTF_8);
     }
+
+    @Override
+    public boolean isRedacted() {
+        return true;
+    }
 }

@@ -1,0 +1,69 @@
+= Kubernetes To Properties Maven Plugin
+
+A plugin to help you develop locally against a Kubernetes Cluster without needing to copy secrets into your command line environment.
+
+== Basic usage
+
+You are running a Maven goal such as `jetty:run` or `quarkus:dev` but you want to point at your test cluster,
+You have permission to access the test cluster's secrets and configmaps, but having to copy those into the commandline you want to run is tiresome and runs the risk of accidentally pasting them elsewhere.
+
+By adding the `k2p-maven-plugin` to a profile you can inject the settings you need:
+
+[source,xml]
+----
+<project>
+  <!-- ... -->
+  <profiles>
+    <profile>
+      <id>dev-cluster</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.stephenc.continuous</groupId>
+            <artifactId>k2p-maven-plugin</artifactId>
+            <configuration>
+              <properties>
+                <postgresql.user>configmap!://default/database/username</postgresql.user>
+                <postgresql.pass>secret!://default/database/password</postgresql.pass>
+              </properties>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
+----
+
+Then just enable the profile and run the `k2p:inject` goal first to set everything up:
+
+[source,bash]
+----
+$ mvn -P+dev-cluster k2p:inject jetty:run
+----
+
+== Proprety sources
+
+The property values are all specified with a prefix to identify the source.
+The following sources are supported:
+
+`value:`:: Inject the value after the prefix.
+There are other plugins that can set properties but this can be useful if setting a bunch of properties from Kubernetes
+`file:`:: Inject the contents of the named local file.
+If the file does not exist an empty string will be injected
+`file!:`:: Inject the contents of the named local file.
+If the file does not exist error will be raised
+`file?:`:: Inject the contents of the named local file.
+If the file does not exist nothing will be injected
+`+secret://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named secret.
+If the secret does not exist or does not contain the named property an empty string will be injected
+`+secret!://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named secret.
+If the secret does not exist or does not contain the named property an error will be raised
+`+secret?://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named secret.
+If the secret does not exist or does not contain the named property nothing will be injected
+`+configMap://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named configMap.
+If the configMap does not exist or does not contain the named property an empty string will be injected
+`+configMap!://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named configMap.
+If the configMap does not exist or does not contain the named property an error will be raised
+`+configMap?://{namespace}/{name}/{property}+`:: Inject the value of the specific property in the named configMap.
+If the configMap does not exist or does not contain the named property nothing will be injected

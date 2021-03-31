@@ -2,6 +2,8 @@ package com.github.stephenc.continuous.k2p;
 
 import com.github.stephenc.continuous.k2p.injectable.AbstractInjectable;
 import com.github.stephenc.continuous.k2p.source.InjectionSource;
+import com.github.stephenc.continuous.k2p.util.CommandGCPAuthenticator;
+import io.kubernetes.client.util.KubeConfig;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +36,10 @@ import org.apache.maven.project.MavenProject;
 )
 public class InjectMojo extends AbstractMojo {
     private static final Pattern VALUE_SCHEME = Pattern.compile("^([a-zA-Z0-9-]+)([?1]?):(.*)$");
+
+    static {
+        KubeConfig.registerAuthenticator(new CommandGCPAuthenticator());
+    }
     /**
      * Disables injection.
      */
